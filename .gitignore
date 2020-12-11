@@ -1,0 +1,14 @@
+*.a
+*.o
+*.so
+*.swp
+*.swo
+*.s
+*.s~
+*.log
+~*
+*.out.*
+
+Makefile
+deadbeef
+_build
