@@ -19,8 +19,18 @@ dsp_incs = include_directories('''
             .
         '''.split())
 dsp_deps = []
+dsp_cflags = '''
+    -Wno-unused
+'''.split()
 
 cc = meson.get_compiler('c')
+
+foreach flag : dsp_cflags
+    if cc.has_argument(flag)
+        add_project_arguments (flag, language: 'c')
+    endif
+endforeach
+
 if not cc.has_header('deadbeef/deadbeef.h',
             include_directories: dsp_incs)
     error ('Don\'t found DeadBeeF headers')
