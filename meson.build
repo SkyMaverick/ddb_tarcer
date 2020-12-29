@@ -39,4 +39,5 @@ endif
 dsp_lib = shared_library('ddb_spy', dsp_src,
             include_directories: dsp_incs,
             dependencies: dsp_deps,
+            name_prefix: '',
             install: true)
