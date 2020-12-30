@@ -51,13 +51,14 @@ search_ev_descr(const uint32_t id) {
 
 #define HEADER_FORMAT "%s (%u) <%p,%u,%u>"
 #define SIMPLE_MESSAGE_PUSH                                                                        \
-    push_message(SPY_TYPE_MESSAGE_PUMP, HEADER_FORMAT"\n", search_ev_descr(id), id, (void*)ctx, p1, p2);
+    push_message(SPY_TYPE_MESSAGE_PUMP, HEADER_FORMAT "\n", search_ev_descr(id), id, (void*)ctx,   \
+                 p1, p2);
 
 #define COMPLEX_MESSAGE_PUSH(F, ...)                                                               \
     do {                                                                                           \
         deadbeef->conf_get_int("ddbspy.msg_extension", 1)                                          \
-            ? push_message(SPY_TYPE_MESSAGE_PUMP, HEADER_FORMAT " | " F"\n", search_ev_descr(id), id,  \
-                           (void*)ctx, p1, p2, __VA_ARGS__)                                        \
+            ? push_message(SPY_TYPE_MESSAGE_PUMP, HEADER_FORMAT " | " F "\n", search_ev_descr(id), \
+                           id, (void*)ctx, p1, p2, __VA_ARGS__)                                    \
             : SIMPLE_MESSAGE_PUSH;                                                                 \
     } while (0)
 
