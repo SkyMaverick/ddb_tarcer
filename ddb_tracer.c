@@ -4,7 +4,15 @@
 DB_functions_t* deadbeef = NULL;
 static DB_misc_t plugin;
 
+static volatile unsigned flag_terminated = 0;
+
+bool
+is_terminated(void) {
+    return (flag_terminated) ? true : false;
+}
+
 #include "buffer.c"
+#include "dispatcher.c"
 
 static inline void
 push_message_direct(uint8_t type, const char* msg) {
@@ -33,10 +41,12 @@ push_message(uint8_t type, const char* fmt, ...) {
 static int
 spy_start(void) {
     spy_buffer_init();
+    spy_dispatcher_init();
     return 0;
 }
 static int
 spy_stop(void) {
+    spy_dispatcher_release();
     spy_buffer_release();
     return 0;
 }
@@ -58,6 +68,7 @@ spy_messages(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
 
     switch (id) {
     case DB_EV_TERMINATE:
+        flag_terminated = 1;
         break;
     }
     return 0;

@@ -35,46 +35,56 @@ spy_buffer_init(void) {
     return 0;
 }
 
-void
+int
 spy_buffer_push(const uint8_t type, const char* message) {
-    if (buffer) {
-        deadbeef->mutex_lock(buffer->lock);
-        if (buffer->count < SPY_MESSAGE_BUFSIZE) {
+    if (!buffer)
+        return -1;
 
-            // get message time stamp
-            clock_gettime(CLOCK_REALTIME, &(buffer->ring[buffer->tail].time_stamp));
-            // copy text message
-            snprintf(buffer->ring[buffer->tail].msg, SPY_MESSAGE_SIZE, "%s", message);
-            buffer->ring[buffer->tail].type = type; // set message type
-
-            buffer->count++;
-            buffer->tail++;
-
-            if (buffer->tail == SPY_MESSAGE_BUFSIZE)
-                buffer->tail = 0;
-            deadbeef->cond_signal(buffer->cond);
-            fprintf(stdout, "%s", message);
-        }
+    deadbeef->mutex_lock(buffer->lock);
+    if (buffer->count == SPY_MESSAGE_BUFSIZE) {
         deadbeef->mutex_unlock(buffer->lock);
+        return -1;
     }
+    // get message time stamp
+    clock_gettime(CLOCK_REALTIME, &(buffer->ring[buffer->tail].time_stamp));
+    // copy text message
+    snprintf(buffer->ring[buffer->tail].msg, SPY_MESSAGE_SIZE, "%s", message);
+    buffer->ring[buffer->tail].type = type; // set message type
+
+    buffer->count++;
+    buffer->tail++;
+
+    if (buffer->tail == SPY_MESSAGE_BUFSIZE)
+        buffer->tail = 0;
+
+    deadbeef->mutex_unlock(buffer->lock);
+    deadbeef->cond_signal(buffer->cond);
+
+    return 0;
 }
 
-void
+int
 spy_buffer_pop(spy_msg_t* message) {
-    if (buffer && message) {
-        deadbeef->mutex_lock(buffer->lock);
-        if (buffer->count) {
+    if (!(buffer && message))
+        return -1;
 
-            memcpy(message, &(buffer->ring[buffer->head]), sizeof(spy_msg_t));
+    deadbeef->mutex_lock(buffer->lock);
 
-            buffer->count--;
-            buffer->head++;
-
-            if (buffer->head == SPY_MESSAGE_BUFSIZE)
-                buffer->head = 0;
-        }
+    if (buffer->count == 0) {
         deadbeef->mutex_unlock(buffer->lock);
+        return -1;
     }
+
+    memcpy(message, &(buffer->ring[buffer->head]), sizeof(spy_msg_t));
+
+    buffer->count--;
+    buffer->head++;
+
+    if (buffer->head == SPY_MESSAGE_BUFSIZE)
+        buffer->head = 0;
+
+    deadbeef->mutex_unlock(buffer->lock);
+    return 0;
 }
 
 bool
@@ -93,7 +103,6 @@ spy_buffer_clear(void) {
 void
 spy_buffer_wait(void) {
     if (buffer) {
-        deadbeef->mutex_lock(buffer->lock);
         deadbeef->cond_wait(buffer->cond, buffer->lock);
         deadbeef->mutex_unlock(buffer->lock);
     }
