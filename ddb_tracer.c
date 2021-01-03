@@ -17,6 +17,11 @@ is_loaded(void) {
     return (flag_loaded) ? true : false;
 }
 
+DB_plugin_t*
+plugin_instance(void) {
+    return (DB_plugin_t*)(&plugin);
+}
+
 #include "buffer.c"
 #include "dispatcher.c"
 
@@ -48,7 +53,7 @@ push_message(uint8_t type, const char* fmt, ...) {
     if (deadbeef->conf_get_int("ddbspy.backend_" #X, 0))                                           \
     backend_##X##_load()
 #define BACKEND_CHANGE(X)                                                                          \
-    deadbeef->conf_get_int("ddbspy.backend_" #X, 0) ? backend_##X##_load() : backend_##X##_unload();
+    deadbeef->conf_get_int("ddbspy.backend_" #X, 0) ? backend_##X##_load() : backend_##X##_unload()
 #define BACKEND_UNLOAD(X) backend_##X##_unload()
 
 static int
@@ -100,6 +105,7 @@ spy_messages(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
     switch (id) {
     case DB_EV_CONFIGCHANGED: {
         deadbeef->conf_get_int("ddbspy.spy_enable", 0) ? spy_system_load() : spy_system_unload();
+        BACKEND_CHANGE(stdio);
         break;
     }
     case DB_EV_TERMINATE:
@@ -114,8 +120,7 @@ spy_messages(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
 static const char settings_dlg[] =
     "property \"Enable tracing\" checkbox ddbspy.spy_enable 1;\n"
     "property \"Enable stdio backend\" checkbox ddbspy.backend_stdio 1;\n"
-    "property \"Show message extensions\" checkbox ddbspy.msg_extension 1;\n"
-    "property \"Print trace in application log\" checkbox ddbspy.app_log_redirect 1;\n";
+    "property \"Show message extensions\" checkbox ddbspy.msg_extension 1;\n";
 
 static DB_misc_t plugin = {
     .plugin.type = DB_PLUGIN_MISC,
