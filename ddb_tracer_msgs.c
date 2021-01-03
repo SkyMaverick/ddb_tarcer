@@ -115,7 +115,6 @@ spy_process(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
     case DB_EV_NEXT:
     case DB_EV_PREV:
     case DB_EV_PLAY_CURRENT:
-    case DB_EV_PLAY_NUM:
     case DB_EV_STOP:
     case DB_EV_PAUSE:
     case DB_EV_PLAY_RANDOM:
@@ -141,6 +140,9 @@ spy_process(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
         SIMPLE_MESSAGE_PUSH;
         break;
 
+    case DB_EV_PLAY_NUM:
+        COMPLEX_MESSAGE_PUSH("%s: [%u]", "num", p1);
+        break;
     case DB_EV_PAUSED:
         COMPLEX_MESSAGE_PUSH("%s: [%s]", "сhange", (p1) ? "paused" : "unpaused");
         break;
@@ -148,7 +150,7 @@ spy_process(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
         COMPLEX_MESSAGE_PUSH("%s: [%s]", "type", changed_to_str(p1));
         break;
     case DB_EV_SEEK:
-        COMPLEX_MESSAGE_PUSH("%s: [%d]", "sec", p1 / 1000);
+        COMPLEX_MESSAGE_PUSH("%s: [%u]", "sec", p1 / 1000);
         break;
     case DB_EV_ACTIONSCHANGED:
         // TODO maybe more info of action
@@ -156,7 +158,7 @@ spy_process(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
         break;
     case DB_EV_CONFIGCHANGED:
         SIMPLE_MESSAGE_PUSH;
-        // TODO parse config functionality
+        // TODO diff config functionality
         break;
     case DB_EV_SONGCHANGED: {
         if (ctx > 0) {

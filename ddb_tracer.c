@@ -48,6 +48,7 @@ push_message(uint8_t type, const char* fmt, ...) {
 #include "ddb_tracer_msgs.c"
 
 #include "backend_stdio.c"
+#include "backend_file.c"
 
 #define BACKEND_LOAD(X)                                                                            \
     if (deadbeef->conf_get_int("ddbspy.backend_" #X, 0))                                           \
@@ -59,12 +60,17 @@ push_message(uint8_t type, const char* fmt, ...) {
 static int
 spy_system_load(void) {
     if ((!(is_loaded())) && (deadbeef->conf_get_int("ddbspy.spy_enable", 0))) {
-        spy_buffer_init();
-        spy_dispatcher_init();
+        if (spy_buffer_init() != 0)
+            return 1;
+        if (spy_dispatcher_init() != 0) {
+            spy_buffer_release();
+            return 1;
+        }
 
         deadbeef->log_viewer_register(spy_log_callback, NULL);
 
         BACKEND_LOAD(stdio);
+        BACKEND_LOAD(file);
 
         flag_loaded = 1;
     }
@@ -74,6 +80,7 @@ spy_system_load(void) {
 static int
 spy_system_unload(void) {
     if (is_loaded()) {
+        BACKEND_UNLOAD(file);
         BACKEND_UNLOAD(stdio);
 
         deadbeef->log_viewer_unregister(spy_log_callback, NULL);
@@ -106,6 +113,7 @@ spy_messages(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
     case DB_EV_CONFIGCHANGED: {
         deadbeef->conf_get_int("ddbspy.spy_enable", 0) ? spy_system_load() : spy_system_unload();
         BACKEND_CHANGE(stdio);
+        BACKEND_CHANGE(file);
         break;
     }
     case DB_EV_TERMINATE:
@@ -118,8 +126,9 @@ spy_messages(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
 }
 
 static const char settings_dlg[] =
-    "property \"Enable tracing\" checkbox ddbspy.spy_enable 1;\n"
+    "property \"Enable tracing\" checkbox ddbspy.spy_enable 0;\n"
     "property \"Enable stdio backend\" checkbox ddbspy.backend_stdio 1;\n"
+    "property \"Enable file backend\" checkbox ddbspy.backend_file 0;\n"
     "property \"Show message extensions\" checkbox ddbspy.msg_extension 1;\n";
 
 static DB_misc_t plugin = {
