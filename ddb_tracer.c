@@ -61,10 +61,10 @@ static int
 spy_system_load(void) {
     if ((!(is_loaded())) && (deadbeef->conf_get_int("ddbspy.spy_enable", 0))) {
         if (spy_buffer_init() != 0)
-            return 1;
+            return -1;
         if (spy_dispatcher_init() != 0) {
             spy_buffer_release();
-            return 1;
+            return -1;
         }
 
         deadbeef->log_viewer_register(spy_log_callback, NULL);
@@ -112,8 +112,10 @@ spy_messages(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
     switch (id) {
     case DB_EV_CONFIGCHANGED: {
         deadbeef->conf_get_int("ddbspy.spy_enable", 0) ? spy_system_load() : spy_system_unload();
-        BACKEND_CHANGE(stdio);
-        BACKEND_CHANGE(file);
+        if (flag_loaded) {
+            BACKEND_CHANGE(stdio);
+            BACKEND_CHANGE(file);
+        }
         break;
     }
     case DB_EV_TERMINATE:
@@ -166,8 +168,6 @@ static DB_misc_t plugin = {
     .plugin.message = spy_messages,
     .plugin.start = spy_start,
     .plugin.stop = spy_stop,
-    .plugin.connect = NULL,
-    .plugin.disconnect = NULL,
 };
 
 DB_plugin_t*
