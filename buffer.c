@@ -115,6 +115,6 @@ spy_buffer_release(void) {
             deadbeef->mutex_free(buffer->lock);
         if (buffer->cond)
             deadbeef->cond_free(buffer->cond);
-        free(buffer);
+        free_and_null(buffer);
     }
 }

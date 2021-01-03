@@ -10,7 +10,12 @@
 #define SPY_MESSAGE_SIZE 4096
 #define SPY_MESSAGE_BUFSIZE 1000
 
-enum { SPY_TYPE_MESSAGE_LOGGER, SPY_TYPE_MESSAGE_PUMP, SPY_TYPE_MESSAGE_INTERNAL };
+enum {
+    SPY_TYPE_MESSAGE_LOGGER,
+    SPY_TYPE_MESSAGE_PUMP,
+    SPY_TYPE_MESSAGE_INTERNAL,
+    SPY_TYPE_MESSAGE_TERMINATED
+};
 
 typedef struct {
     uint8_t type;
@@ -18,3 +23,9 @@ typedef struct {
 
     char msg[SPY_MESSAGE_SIZE];
 } spy_msg_t;
+
+#define free_and_null(X)                                                                           \
+    do {                                                                                           \
+        free(X);                                                                                   \
+        X = NULL;                                                                                  \
+    } while (0);

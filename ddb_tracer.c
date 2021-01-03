@@ -5,10 +5,16 @@ DB_functions_t* deadbeef = NULL;
 static DB_misc_t plugin;
 
 static volatile unsigned flag_terminated = 0;
+static volatile unsigned flag_loaded = 0;
 
 bool
 is_terminated(void) {
     return (flag_terminated) ? true : false;
+}
+
+bool
+is_loaded(void) {
+    return (flag_loaded) ? true : false;
 }
 
 #include "buffer.c"
@@ -36,45 +42,78 @@ push_message(uint8_t type, const char* fmt, ...) {
 #include "ddb_tracer_logs.c"
 #include "ddb_tracer_msgs.c"
 
-/*============= DEADBEEF API =======================*/
+#include "backend_stdio.c"
+
+#define BACKEND_LOAD(X)                                                                            \
+    if (deadbeef->conf_get_int("ddbspy.backend_" #X, 0))                                           \
+    backend_##X##_load()
+#define BACKEND_CHANGE(X)                                                                          \
+    deadbeef->conf_get_int("ddbspy.backend_" #X, 0) ? backend_##X##_load() : backend_##X##_unload();
+#define BACKEND_UNLOAD(X) backend_##X##_unload()
 
 static int
-spy_start(void) {
-    spy_buffer_init();
-    spy_dispatcher_init();
-    return 0;
-}
-static int
-spy_stop(void) {
-    spy_dispatcher_release();
-    spy_buffer_release();
-    return 0;
-}
+spy_system_load(void) {
+    if ((!(is_loaded())) && (deadbeef->conf_get_int("ddbspy.spy_enable", 0))) {
+        spy_buffer_init();
+        spy_dispatcher_init();
 
-static int
-spy_connect(void) {
-    deadbeef->log_viewer_register(spy_log_callback, NULL);
-    return 0;
-}
-static int
-spy_disconnect(void) {
-    deadbeef->log_viewer_unregister(spy_log_callback, NULL);
-    return 0;
-}
+        deadbeef->log_viewer_register(spy_log_callback, NULL);
 
-static int
-spy_messages(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
-    spy_process(id, ctx, p1, p2);
+        BACKEND_LOAD(stdio);
 
-    switch (id) {
-    case DB_EV_TERMINATE:
-        flag_terminated = 1;
-        break;
+        flag_loaded = 1;
     }
     return 0;
 }
 
+static int
+spy_system_unload(void) {
+    if (is_loaded()) {
+        BACKEND_UNLOAD(stdio);
+
+        deadbeef->log_viewer_unregister(spy_log_callback, NULL);
+        push_message_direct(SPY_TYPE_MESSAGE_TERMINATED, NULL);
+
+        spy_dispatcher_release();
+        spy_buffer_release();
+
+        flag_loaded = 0;
+    }
+    return 0;
+}
+
+/*============= DEADBEEF API =======================*/
+
+static int
+spy_start(void) {
+    return spy_system_load();
+}
+
+static int
+spy_stop(void) {
+    return spy_system_unload();
+}
+
+static int
+spy_messages(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
+
+    switch (id) {
+    case DB_EV_CONFIGCHANGED: {
+        deadbeef->conf_get_int("ddbspy.spy_enable", 0) ? spy_system_load() : spy_system_unload();
+        break;
+    }
+    case DB_EV_TERMINATE:
+        flag_terminated = 1;
+        break;
+    }
+
+    spy_process(id, ctx, p1, p2);
+    return 0;
+}
+
 static const char settings_dlg[] =
+    "property \"Enable tracing\" checkbox ddbspy.spy_enable 1;\n"
+    "property \"Enable stdio backend\" checkbox ddbspy.backend_stdio 1;\n"
     "property \"Show message extensions\" checkbox ddbspy.msg_extension 1;\n"
     "property \"Print trace in application log\" checkbox ddbspy.app_log_redirect 1;\n";
 
@@ -113,8 +152,8 @@ static DB_misc_t plugin = {
     .plugin.message = spy_messages,
     .plugin.start = spy_start,
     .plugin.stop = spy_stop,
-    .plugin.connect = spy_connect,
-    .plugin.disconnect = spy_disconnect,
+    .plugin.connect = NULL,
+    .plugin.disconnect = NULL,
 };
 
 DB_plugin_t*
