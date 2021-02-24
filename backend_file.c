@@ -11,10 +11,10 @@
 static volatile unsigned is_file_active = 0;
 static volatile uintptr_t fd = 0;
 
-#define FDFILE(X) (FILE*)(X)
+#define FDFILE(X) (FILE *)(X)
 
 static inline size_t
-filename_process(char* buf, size_t sz) {
+filename_process(char *buf, size_t sz) {
     char date[sz / 2];
     time_t now = time(NULL);
 
@@ -24,7 +24,7 @@ filename_process(char* buf, size_t sz) {
 }
 
 static void
-to_file(const uint32_t type, const char* msg, const size_t sz_msg, void* ctx) {
+to_file(const uint32_t type, const char *msg, const size_t sz_msg, void *ctx) {
     fprintf(FDFILE(fd), "%s", msg);
 }
 

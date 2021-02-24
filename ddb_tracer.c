@@ -1,7 +1,7 @@
 #include <deadbeef/deadbeef.h>
 #include "ddb_tracer.h"
 
-DB_functions_t* deadbeef = NULL;
+DB_functions_t *deadbeef = NULL;
 static DB_misc_t plugin;
 
 static volatile unsigned flag_terminated = 0;
@@ -17,20 +17,20 @@ is_loaded(void) {
     return (flag_loaded) ? true : false;
 }
 
-DB_plugin_t*
+DB_plugin_t *
 plugin_instance(void) {
-    return (DB_plugin_t*)(&plugin);
+    return (DB_plugin_t *)(&plugin);
 }
 
 #include "buffer.c"
 #include "dispatcher.c"
 
 static inline void
-push_message_direct(uint8_t type, const char* msg) {
+push_message_direct(uint8_t type, const char *msg) {
     spy_buffer_push(type, msg);
 }
 static inline size_t
-push_message(uint8_t type, const char* fmt, ...) {
+push_message(uint8_t type, const char *fmt, ...) {
     char msg[SPY_MESSAGE_SIZE];
     int ret = 0;
 
@@ -131,7 +131,8 @@ static const char settings_dlg[] =
     "property \"Enable tracing\" checkbox ddbspy.spy_enable 0;\n"
     "property \"Enable stdio backend\" checkbox ddbspy.backend_stdio 1;\n"
     "property \"Enable file backend\" checkbox ddbspy.backend_file 0;\n"
-    "property \"Show message extensions\" checkbox ddbspy.msg_extension 1;\n";
+    "property \"Show message extensions\" checkbox ddbspy.msg_extension 1;\n"
+    "property \"Show tracks extensions\" checkbox ddbspy.item_extension 1;\n";
 
 static DB_misc_t plugin = {
     .plugin.type = DB_PLUGIN_MISC,
@@ -170,8 +171,8 @@ static DB_misc_t plugin = {
     .plugin.stop = spy_stop,
 };
 
-DB_plugin_t*
-ddb_spy_load(DB_functions_t* api) {
+DB_plugin_t *
+ddb_spy_load(DB_functions_t *api) {
     deadbeef = api;
     return DB_PLUGIN(&plugin);
 }

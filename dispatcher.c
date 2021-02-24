@@ -1,21 +1,21 @@
 #include <ddb_tracer.h>
 
-typedef void (*cb_output_worker)(const uint32_t type, const char* msg, const size_t sz_msg,
-                                 void* ctx);
+typedef void (*cb_output_worker)(const uint32_t type, const char *msg, const size_t sz_msg,
+                                 void *ctx);
 
 typedef struct dispatch_item_s {
     cb_output_worker callback;
-    void* ctx;
-    struct dispatch_item_s* next;
+    void *ctx;
+    struct dispatch_item_s *next;
 } spy_dispatch_item_t;
 
-static spy_dispatch_item_t* disp_list = NULL;
+static spy_dispatch_item_t *disp_list = NULL;
 static uintptr_t disp_lock = 0;
 static size_t wcount = 0;
 
 static uintptr_t tid_dispatcher = 0;
 
-static inline const char*
+static inline const char *
 message_type_str(const unsigned type) {
     switch (type) {
     case SPY_TYPE_MESSAGE_LOGGER:
@@ -29,7 +29,7 @@ message_type_str(const unsigned type) {
 }
 
 static inline size_t
-message_process(spy_msg_t* M, char* buf, size_t size) {
+message_process(spy_msg_t *M, char *buf, size_t size) {
     char strtv[20] = {0};
 
     int ret = strftime(strtv, 20, "%X", localtime(&(M->time_stamp.tv_sec)));
@@ -42,7 +42,7 @@ message_process(spy_msg_t* M, char* buf, size_t size) {
 }
 
 static void
-dispatch_message(void* ctx) {
+dispatch_message(void *ctx) {
     char buffer[SPY_MESSAGE_SIZE];
 
     spy_msg_t msg = {0};
@@ -55,7 +55,7 @@ dispatch_message(void* ctx) {
             if (sz > 0) {
                 deadbeef->mutex_lock(disp_lock);
 
-                for (spy_dispatch_item_t* item = disp_list; item; item = item->next)
+                for (spy_dispatch_item_t *item = disp_list; item; item = item->next)
                     item->callback(msg.type, buffer, sz, item->ctx);
 
                 deadbeef->mutex_unlock(disp_lock);
@@ -81,16 +81,16 @@ spy_dispatcher_init(void) {
 }
 
 int
-spy_dispatcher_register(cb_output_worker worker, void* ctx) {
+spy_dispatcher_register(cb_output_worker worker, void *ctx) {
     deadbeef->mutex_lock(disp_lock);
 
-    for (spy_dispatch_item_t* X = disp_list; X; X = X->next)
+    for (spy_dispatch_item_t *X = disp_list; X; X = X->next)
         if ((X->callback == worker) && (X->ctx == ctx)) {
             deadbeef->mutex_unlock(disp_lock);
             return -1;
         }
 
-    spy_dispatch_item_t* W = calloc(1, sizeof(spy_dispatch_item_t));
+    spy_dispatch_item_t *W = calloc(1, sizeof(spy_dispatch_item_t));
     if (W == NULL) {
         deadbeef->mutex_unlock(disp_lock);
         return -1;
@@ -105,11 +105,11 @@ spy_dispatcher_register(cb_output_worker worker, void* ctx) {
     return 0;
 }
 void
-spy_dispatcher_unregister(cb_output_worker worker, void* ctx) {
+spy_dispatcher_unregister(cb_output_worker worker, void *ctx) {
     deadbeef->mutex_lock(disp_lock);
 
-    spy_dispatch_item_t* prev = NULL;
-    for (spy_dispatch_item_t* X = disp_list; X; X = X->next) {
+    spy_dispatch_item_t *prev = NULL;
+    for (spy_dispatch_item_t *X = disp_list; X; X = X->next) {
         if ((X->callback == worker) && (X->ctx == ctx)) {
             if (prev) {
                 prev->next = X->next;

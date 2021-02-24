@@ -11,7 +11,7 @@ typedef struct {
     spy_msg_t ring[SPY_MESSAGE_BUFSIZE];
 } spy_buffer_t;
 
-static spy_buffer_t* buffer;
+static spy_buffer_t *buffer;
 
 int
 spy_buffer_init(void) {
@@ -36,7 +36,7 @@ spy_buffer_init(void) {
 }
 
 int
-spy_buffer_push(const uint8_t type, const char* message) {
+spy_buffer_push(const uint8_t type, const char *message) {
     if (!buffer)
         return -1;
 
@@ -64,7 +64,7 @@ spy_buffer_push(const uint8_t type, const char* message) {
 }
 
 int
-spy_buffer_pop(spy_msg_t* message) {
+spy_buffer_pop(spy_msg_t *message) {
     if (!(buffer && message))
         return -1;
 
