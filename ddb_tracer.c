@@ -22,6 +22,7 @@ plugin_instance(void) {
     return (DB_plugin_t *)(&plugin);
 }
 
+#include "ddb_funcs.c"
 #include "buffer.c"
 #include "dispatcher.c"
 
@@ -49,6 +50,7 @@ push_message(uint8_t type, const char *fmt, ...) {
 
 #include "backend_stdio.c"
 #include "backend_file.c"
+#include "backend_html.c"
 
 #define BACKEND_LOAD(X)                                                                            \
     if (deadbeef->conf_get_int("ddbspy.backend_" #X, 0))                                           \
@@ -71,6 +73,7 @@ spy_system_load(void) {
 
         BACKEND_LOAD(stdio);
         BACKEND_LOAD(file);
+        BACKEND_LOAD(html);
 
         flag_loaded = 1;
     }
@@ -80,6 +83,7 @@ spy_system_load(void) {
 static int
 spy_system_unload(void) {
     if (is_loaded()) {
+        BACKEND_UNLOAD(html);
         BACKEND_UNLOAD(file);
         BACKEND_UNLOAD(stdio);
 
@@ -115,6 +119,7 @@ spy_messages(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
         if (flag_loaded) {
             BACKEND_CHANGE(stdio);
             BACKEND_CHANGE(file);
+            BACKEND_CHANGE(html);
         }
         break;
     }
@@ -131,6 +136,7 @@ static const char settings_dlg[] =
     "property \"Enable tracing\" checkbox ddbspy.spy_enable 0;\n"
     "property \"Enable stdio backend\" checkbox ddbspy.backend_stdio 1;\n"
     "property \"Enable file backend\" checkbox ddbspy.backend_file 0;\n"
+    "property \"Enable html backend\" checkbox ddbspy.backend_html 0;\n"
     "property \"Show message extensions\" checkbox ddbspy.msg_extension 1;\n"
     "property \"Show tracks extensions\" checkbox ddbspy.item_extension 1;\n";
 

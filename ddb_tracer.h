@@ -24,6 +24,11 @@ typedef struct {
     char msg[SPY_MESSAGE_SIZE];
 } spy_msg_t;
 
+typedef struct {
+    unsigned is_active;
+    uintptr_t fd;
+} backend_file_t;
+
 #define free_and_null(X)                                                                           \
     do {                                                                                           \
         free(X);                                                                                   \
