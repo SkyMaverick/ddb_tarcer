@@ -52,7 +52,7 @@ search_ev_descr(const uint32_t id) {
     return EVENT_UKNOWN_MSG;
 }
 
-#define HEADER_FORMAT "%s (%u) <%p,%u,%u>"
+#define HEADER_FORMAT "%s (%u) {%p,%u,%u}"
 #define SIMPLE_MESSAGE_PUSH                                                                        \
     push_message(SPY_TYPE_MESSAGE_PUMP, HEADER_FORMAT "\n", search_ev_descr(id), id, (void *)ctx,  \
                  p1, p2);

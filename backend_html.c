@@ -1,24 +1,23 @@
+#include "ddb_tracer.h"
 #include "backend_html.h"
-
-#if defined(__linux__) || defined(__gnu_linux__)
-    #include <linux/limits.h>
-#endif
-
-#ifndef NAME_MAX
-    #define NAME_MAX 128
-#endif
-#define FDFILE(X) (FILE *)(X)
 
 static backend_file_t bh_state = {0};
 
-static inline void
-text_to_html (const uint32_t type, const char *msg, const size_t sz_msg, void *ctx) {
-
-}
-
 static void
 to_html(const uint32_t type, const char *msg, const size_t sz_msg, void *ctx) {
-    fprintf(FDFILE(bh_state.fd), "%s", msg);
+    switch (type) {
+    case SPY_TYPE_MESSAGE_LOGGER:
+        fprintf(FDFILE(bh_state.fd), "<p class=\"%s\"> %s </p>", "spy_logger", msg);
+        break;
+    case SPY_TYPE_MESSAGE_PUMP:
+        fprintf(FDFILE(bh_state.fd), "<p class=\"%s\"> %s </p>", "spy_message", msg);
+        break;
+    case SPY_TYPE_MESSAGE_INTERNAL:
+        fprintf(FDFILE(bh_state.fd), "<p class=\"%s\"> %s </p>", "spy_intrnl", msg);
+        break;
+    case SPY_TYPE_MESSAGE_TERMINATED:
+        break;
+    }
 }
 
 int
@@ -31,7 +30,7 @@ backend_html_load(void) {
         bh_state.fd = (uintptr_t)fopen(file, "w");
         if (bh_state.fd) {
             spy_dispatcher_register(to_html, NULL);
-            
+
             fprintf(FDFILE(bh_state.fd), "%s", BACKEND_HTML_HEADER);
             bh_state.is_active = 1;
             return 0;
@@ -58,5 +57,3 @@ bool
 backend_html_loaded(void) {
     return (bh_state.is_active) ? true : false;
 }
-
-#undef FDFILE

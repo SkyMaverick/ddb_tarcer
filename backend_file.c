@@ -1,17 +1,4 @@
-#include <ddb_tracer.h>
-
-#if defined(__linux__) || defined(__gnu_linux__)
-    #include <linux/limits.h>
-#endif
-
-#ifndef NAME_MAX
-    #define NAME_MAX 128
-#endif
-
-// static volatile unsigned is_file_active = 0;
-// static volatile uintptr_t fd = 0;
-
-#define FDFILE(X) (FILE *)(X)
+#include "ddb_tracer.h"
 
 static backend_file_t bf_state = {0};
 
@@ -54,5 +41,3 @@ bool
 backend_file_loaded(void) {
     return (bf_state.is_active) ? true : false;
 }
-
-#undef FDFILE
