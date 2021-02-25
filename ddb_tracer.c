@@ -137,8 +137,8 @@ static const char settings_dlg[] =
     "property \"Enable stdio backend\" checkbox ddbspy.backend_stdio 1;\n"
     "property \"Enable file backend\" checkbox ddbspy.backend_file 0;\n"
     "property \"Enable html backend\" checkbox ddbspy.backend_html 0;\n"
-    "property \"Show message extensions\" checkbox ddbspy.msg_extension 1;\n"
-    "property \"Show tracks extensions\" checkbox ddbspy.item_extension 1;\n";
+    "property \"Enable message extended info\" checkbox ddbspy.msg_extension 1;\n"
+    "property \"Enable tracks extended info\" checkbox ddbspy.item_extension 1;\n";
 
 static DB_misc_t plugin = {
     .plugin.type = DB_PLUGIN_MISC,

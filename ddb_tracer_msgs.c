@@ -108,7 +108,7 @@ track_descr_str(DB_playItem_t *T, char *buf, size_t size) {
     if (pl) {
         int ret = deadbeef->plt_get_title(pl, p_name, size * sizeof(char));
         // clang-format off
-        snprintf(buf, size, "[%s] %s: [%d], %s: [%s], %s:[%d], %s:[%s]",
+        snprintf(buf, size, "[%s] %s:[%d], %s:[%s], %s:[%d], %s:[%s]",
                 "TRACK"     ,
                 "pls_idx"   , deadbeef->plt_get_idx(pl),
                 "pls_name"  , (ret < 0) ? "empty" : p_name,
@@ -130,17 +130,17 @@ trackinfo_to_str(ddb_event_track_t *T, uint32_t type, char *buf, size_t size) {
 
     switch (T->ev.event) {
     case DB_EV_SONGFINISHED:
-        snprintf(tmp, size, "%s: [%p], %s: [%.3f]", "from", T->track, "sec", T->playtime);
+        snprintf(tmp, size, "%s:[%p], %s:[%.3f]", "from", T->track, "sec", T->playtime);
         break;
     case DB_EV_TRACKINFOCHANGED:
-        snprintf(tmp, size, "%s: [%p], %s: [%s]", "from", T->track, "type", changed_to_str(type));
+        snprintf(tmp, size, "%s:[%p], %s:[%s]", "from", T->track, "type", changed_to_str(type));
         break;
     case DB_EV_CURSOR_MOVED:
-        snprintf(tmp, size, "%s: [%p], %s: [%s]", "from", T->track, "iter",
+        snprintf(tmp, size, "%s:[%p], %s:[%s]", "from", T->track, "iter",
                  (type) ? "search" : "main");
         break;
     default:
-        snprintf(tmp, size, "%s: [%p]", "from", T->track);
+        snprintf(tmp, size, "%s:[%p]", "from", T->track);
     }
 
     if (T->track == NULL) {
@@ -167,7 +167,7 @@ static void
 trackchange_to_str(ddb_event_trackchange_t *T, char *buf, size_t size) {
 
     char tmp[size];
-    snprintf(tmp, size, "%s: [%p], %s: [%p], %s: [%.3f]", "from", T->from, "to", T->to, "sec",
+    snprintf(tmp, size, "%s:[%p], %s:[%p], %s:[%.3f]", "from", T->from, "to", T->to, "sec",
              T->playtime);
 
     if (deadbeef->conf_get_int("ddbspy.item_extension", 1)) {
@@ -227,16 +227,16 @@ spy_process(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
         break;
 
     case DB_EV_PLAY_NUM:
-        COMPLEX_MESSAGE_PUSH("%s: [%u]", "num", p1);
+        COMPLEX_MESSAGE_PUSH("%s:[%u]", "num", p1);
         break;
     case DB_EV_PAUSED:
-        COMPLEX_MESSAGE_PUSH("%s: [%s]", "сhange", (p1) ? "paused" : "unpaused");
+        COMPLEX_MESSAGE_PUSH("%s:[%s]", "сhange", (p1) ? "paused" : "unpaused");
         break;
     case DB_EV_PLAYLISTCHANGED:
-        COMPLEX_MESSAGE_PUSH("%s: [%s]", "type", changed_to_str(p1));
+        COMPLEX_MESSAGE_PUSH("%s:[%s]", "type", changed_to_str(p1));
         break;
     case DB_EV_SEEK:
-        COMPLEX_MESSAGE_PUSH("%s: [%u]", "sec", p1 / 1000);
+        COMPLEX_MESSAGE_PUSH("%s:[%u]", "sec", p1 / 1000);
         break;
     case DB_EV_ACTIONSCHANGED:
         // TODO maybe more info of action
@@ -281,7 +281,7 @@ spy_process(uint32_t id, uintptr_t ctx, uint32_t p1, uint32_t p2) {
     }
     case DB_EV_SEEKED: {
         ddb_event_playpos_t *P = (ddb_event_playpos_t *)ctx;
-        COMPLEX_MESSAGE_PUSH("%s: [%p], %s: [%.3f]", "from", P->track, "position", P->playpos);
+        COMPLEX_MESSAGE_PUSH("%s:[%p], %s:[%.3f]", "from", P->track, "position", P->playpos);
         break;
     }
     default:

@@ -7,13 +7,13 @@ static void
 to_html(const uint32_t type, const char *msg, const size_t sz_msg, void *ctx) {
     switch (type) {
     case SPY_TYPE_MESSAGE_LOGGER:
-        fprintf(FDFILE(bh_state.fd), "<p class=\"%s\"> %s </p>", "spy_logger", msg);
+        fprintf(FDFILE(bh_state.fd), "<p class=\"%s\"> %s </p>\n", "spy_logger", msg);
         break;
     case SPY_TYPE_MESSAGE_PUMP:
-        fprintf(FDFILE(bh_state.fd), "<p class=\"%s\"> %s </p>", "spy_message", msg);
+        fprintf(FDFILE(bh_state.fd), "<p class=\"%s\"> %s </p>\n", "spy_message", msg);
         break;
     case SPY_TYPE_MESSAGE_INTERNAL:
-        fprintf(FDFILE(bh_state.fd), "<p class=\"%s\"> %s </p>", "spy_intrnl", msg);
+        fprintf(FDFILE(bh_state.fd), "<p class=\"%s\"> %s </p>\n", "spy_intrnl", msg);
         break;
     case SPY_TYPE_MESSAGE_TERMINATED:
         break;
