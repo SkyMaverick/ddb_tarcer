@@ -4,7 +4,7 @@ static volatile unsigned is_stdio_active = 0;
 
 static void
 to_stdout(const uint32_t type, const char *msg, const size_t sz_msg, void *ctx) {
-    fprintf(stdout, "%s", msg);
+    fprintf(stdout, "%s\n", msg);
 }
 
 int

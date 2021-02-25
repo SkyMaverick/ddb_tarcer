@@ -4,7 +4,7 @@ static backend_file_t bf_state = {0};
 
 static void
 to_file(const uint32_t type, const char *msg, const size_t sz_msg, void *ctx) {
-    fprintf(FDFILE(bf_state.fd), "%s", msg);
+    fprintf(FDFILE(bf_state.fd), "%s\n", msg);
 }
 
 int
